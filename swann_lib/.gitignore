@@ -1,0 +1,7 @@
+.classpath
+.project
+.settings/
+target/
+src/main/resources/assembly2_30915x3.csv
+src/test/resources/annotations_summary.txt
+src/test/resources/assembly2_30915x3.txt_with_names.copy.txt
