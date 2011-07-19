@@ -39,4 +39,8 @@ public class Vector {
   public double getMax() {
     return max;
   }
+  
+  public int getSize() {
+    return values.length;
+  }
 }

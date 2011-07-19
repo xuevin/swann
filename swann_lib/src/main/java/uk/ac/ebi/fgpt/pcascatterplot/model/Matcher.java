@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +13,7 @@ import com.google.common.io.Files;
 
 public class Matcher {
   private Map<String,Point> uniqueCelNameToPointMap = new HashMap<String,Point>();
-  private Map<String,Map<String,Integer>> uniqueExperimentToAnnotationsMapMap = new HashMap<String,Map<String,Integer>>();
+  private Map<String,Collection<String>> uniqueExperimentToAnnotationsMapMap = new HashMap<String,Collection<String>>();
   
   public Matcher(File coordFiles, File annotations) throws IOException {
     // First parse the two files into a list of strings
@@ -29,13 +30,15 @@ public class Matcher {
       // FOR TESTING PURPOSES, I AM HARDCODING THE COLUMNS I WANT TO PLOT
       // TODO Make this a function
       uniqueCelNameToPointMap.put(columns[0].replace("\"", ""), new Point(Double.parseDouble(columns[1]),
-          Double.parseDouble(columns[2])));
+          Double.parseDouble(columns[3])));
     }
     // Store listOfAnnotations as a experiment to annotations map
     for (String string : listOfAnnotations) {
       String[] columns = string.split("\t");
       String experiment = columns[0];
-      uniqueExperimentToAnnotationsMapMap.put(experiment, convertAnnotationsColumnToMap(columns[4]));
+      Collection<String> collectionOfAnnotations = convertAnnotationsToCollectoin(columns[4]);
+      collectionOfAnnotations.add(experiment);
+      uniqueExperimentToAnnotationsMapMap.put(experiment,collectionOfAnnotations);
     }
     
     // Now reannotate the points in uniqueCelNameToPointMap
@@ -46,17 +49,17 @@ public class Matcher {
     }
   }
   
-  public Collection getAnnotatedPoints() {
+  public Collection<Point> getAnnotatedPoints() {
     return uniqueCelNameToPointMap.values();
   }
   
-  private Map<String,Integer> convertAnnotationsColumnToMap(String string) {
+  private Collection<String> convertAnnotationsToCollectoin(String string) {
     String[] annotationsAsArray = string.split(";");
-    Map<String,Integer> map = new HashMap<String,Integer>();
+    Collection<String> map = new HashSet<String>();
     for (String termCountPair : annotationsAsArray) {
       String[] array = termCountPair.split(":");
       if (!array[0].equals("")) {
-        map.put(array[0], Integer.parseInt(array[1]));
+        map.add(array[0]);
       }
     }
     return map;

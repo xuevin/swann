@@ -35,8 +35,8 @@ public class MatcherTest {
     int i = 0;
     for(Point point:points){
       System.out.print(point.getUnscaledXPosition() + "\t" + point.getUnscaledYPosition() + "\t");
-      Map<String,Integer> termCountPair= point.getAnnotations();
-      for(String string:termCountPair.keySet()){
+      Collection<String> termCountPair= point.getAnnotations();
+      for(String string:termCountPair){
         System.out.print(string+"\t");
       }
       System.out.println();

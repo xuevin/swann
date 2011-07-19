@@ -1,13 +1,13 @@
 package uk.ac.ebi.fgpt.pcascatterplot.model;
 
-import java.util.Map;
+import java.util.Collection;
 
 public class Point {
   private Float scaledXPosition;
   private Float scaledYPosition;
   private double unscaledXPositoin;
   private double unscaledYPosition;
-  private Map<String,Integer> annotations;
+  private Collection<String> annotations;
   
   public Point(double unscaledXPosition,
                double unscaledYPosition,
@@ -56,11 +56,19 @@ public class Point {
     return unscaledYPosition;
   }
   
-  public void setAnnotations(Map<String,Integer> annotations) {
+  public void setAnnotations(Collection<String> annotations) {
     this.annotations = annotations;
   }
   
-  public Map<String,Integer> getAnnotations() {
+  public Collection<String> getAnnotations() {
     return annotations;
+  }
+  
+  public String getAnnotationsAsString() {
+    StringBuilder builder = new StringBuilder();
+    for (String string : getAnnotations()) {
+      builder.append(string + "\t");
+    }
+    return builder.toString();
   }
 }

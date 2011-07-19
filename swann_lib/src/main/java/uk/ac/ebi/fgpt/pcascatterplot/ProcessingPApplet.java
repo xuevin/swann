@@ -1,17 +1,31 @@
 package uk.ac.ebi.fgpt.pcascatterplot;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PImage;
 import uk.ac.ebi.fgpt.pcascatterplot.model.ColoredHashSetOfPoints;
+import uk.ac.ebi.fgpt.pcascatterplot.model.Matcher;
 import uk.ac.ebi.fgpt.pcascatterplot.model.Point;
-import uk.ac.ebi.fgpt.pcascatterplot.model.ScatterPlot;
+import uk.ac.ebi.fgpt.pcascatterplot.model.EmptyScatterPlot;
+import uk.ac.ebi.fgpt.pcascatterplot.model.EmptyScatterPlot.Type;
 
 public class ProcessingPApplet extends PApplet {
-  private ScatterPlot scatterPlot;
+  
+  private EmptyScatterPlot scatterPlot;
   
   private PGraphics plotBuffer;
   private PImage plotImg;
@@ -27,27 +41,44 @@ public class ProcessingPApplet extends PApplet {
   private int firstDragCornerX;
   private int firstDragCornerY;
   
+  private int annotationsRectX = 0;
+  private int annotationsRectY = 0;
+  
+  private Set<String> experimentsInLastHighlight;
+  private static final int ANNOTATIONSRECTSIZE = 20;
+  
   @Override
   public void setup() {
-    size(400, 400, P2D);
+    size(800, 800, P2D);
     background(0);
+    frame.setResizable(true);
     
     firstDragCornerX = -1;
     firstDragCornerY = -1;
-    
     zoom = 1;
+    
+    experimentsInLastHighlight = new HashSet<String>();
     
     textFont(loadFont(this.getClass().getClassLoader().getResource("Arial-Black-14.vlw").getPath()));
     
-    // frameRate(2000);
-    // System.out.println(args[0]);
+    // frameRate(30);
+    scatterPlot = new EmptyScatterPlot(width, height);
     
-    String[] arrayOfStrings = loadStrings(new File(this.getClass().getClassLoader().getResource(
-//      "assembly2_30915x3.csv").getFile()));
-     "mock_data.txt").getFile()));
-    
-    scatterPlot = new ScatterPlot(width, height, arrayOfStrings);
-    scatterPlot.setPlot(0, 1);
+    File annotations = new File(args[0]);
+    File coords = new File(args[1]);
+    Matcher match;
+    try {
+      match = new Matcher(coords, annotations);
+      // colorPoints(match.getAnnotatedPoints(), "cell_line", "brain", "bone marrow","blood");
+      // colorPoints(match.getAnnotatedPoints(), "cell_line", "bone marrow","blood");
+      colorPoints(match.getAnnotatedPoints(), "cell_line", "bone marrow", "blood", "brain"); // Why does
+      // adding lung remove this entire bottom section?
+      // scatterPlot.addPointsToScatterPlot(match.getAnnotatedPoints(), 0, 0, 255);
+      // colorPoints(match.getAnnotatedPoints(), "E-GEOD-8507");
+      
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     
     // Draw image into buffer
     bufferXCoord = 0;
@@ -56,21 +87,57 @@ public class ProcessingPApplet extends PApplet {
     
   }
   
+  private void colorPoints(Collection<Point> annotatedPoints, String... termsToFilterOn) {
+    HashSet<Point> annotatedPointsCopy = new HashSet<Point>(annotatedPoints);
+    int[][] colorMap = new int[4][3];
+    colorMap[0] = new int[] {255, 0, 0};
+    colorMap[1] = new int[] {0, 255, 0};
+    colorMap[2] = new int[] {0, 0, 255};
+    colorMap[3] = new int[] {255, 0, 255};
+    
+    int i = 0;
+    for (String annotation : termsToFilterOn) {
+      Set<Point> coloredSet = new HashSet<Point>();
+      for (Point point : annotatedPoints) {
+        // Make sure that the point only has one of the annotations
+        if (point.getAnnotations().contains(annotation)) {
+          boolean foundOnce = true;
+          for (String otherTerm : termsToFilterOn) {
+            if (otherTerm != annotation) {
+              if (point.getAnnotations().contains(otherTerm)) {
+                foundOnce = false;
+              }
+            }
+          }
+          if (foundOnce) {
+            coloredSet.add(point);
+            annotatedPointsCopy.remove(point);
+          }
+        }
+      }
+      scatterPlot.addPointsToScatterPlot(coloredSet, colorMap[i][0], colorMap[i][1], colorMap[i][2]);
+      i++;
+    }
+    
+    // Color remaining points
+    System.out.println(annotatedPointsCopy.size());
+    scatterPlot.addPointsToScatterPlot(annotatedPointsCopy, 144, 144, 144);
+  }
+  
   @Override
   public void draw() {
+    // System.out.println(frameRate);
     fill(0);
     background(0);
-    image(plotImg, PLOT_BORDER, PLOT_BORDER);
-    // System.out.println(frameRate);
-    drawSelectingRect();
-    // System.out.println(frameRate);
-    drawAxis();
     
+    image(plotImg, PLOT_BORDER, PLOT_BORDER);
+    
+    drawSelectingRect();
+    drawAxis();
     stroke(255);
   }
   
   private void drawAxis() {
-    // TODO If you want this to be faster, push this into a buffer. (It won't make much of a difference)
     stroke(255);
     line(PLOT_BORDER, height - PLOT_BORDER, width - PLOT_BORDER, height - PLOT_BORDER);
     line(PLOT_BORDER, PLOT_BORDER, PLOT_BORDER, height - PLOT_BORDER);
@@ -125,26 +192,160 @@ public class ProcessingPApplet extends PApplet {
   
   @Override
   public void mouseReleased() {
-    //TODO This may be a dumb idea... The points in the scatter plot already have scaled values
-    Set set = scatterPlot.extractEverythingInRegionUnscaled(convertXPositionToAbsolutePosition(firstDragCornerX),
-      convertYPositionToAbsolutePosition(firstDragCornerY),
-      convertXPositionToAbsolutePosition(mouseX),
-      convertYPositionToAbsolutePosition(mouseY));
+    Set<Point> set = scatterPlot.extractEverythingInRectangularRegion(
+      convertMouseXPositionToBufferPosition(firstDragCornerX),
+      convertMouseYPositionToBufferPosition(firstDragCornerY), convertMouseXPositionToBufferPosition(mouseX),
+      convertMouseYPositionToBufferPosition(mouseY), EmptyScatterPlot.Type.SCALED);
     
-//    System.out.println("First X " + convertXPositionToAbsolutePosition(firstDragCornerX));
-//    System.out.println("First Y " + convertYPositionToAbsolutePosition(firstDragCornerY));
-//    System.out.println("Second X " + convertXPositionToAbsolutePosition(mouseX));
-//    System.out.println("Second Y " + convertYPositionToAbsolutePosition(mouseY));
-    System.out.println(set.size());
-        
-    // System.out.println((firstDragCornerX - PLOT_BORDER) + "\t" + (firstDragCornerY - PLOT_BORDER));
-    // System.out.println((mouseX - PLOT_BORDER) + "\t" + (mouseY - PLOT_BORDER));
+    // DEBUGGING PRINTOUT
+    // System.out.println("First X " + convertMouseXPositionToAbsolutePosition(firstDragCornerX));
+    // System.out.println("First Y " + convertMouseYPositionToAbsolutePosition(firstDragCornerY));
+    // System.out.println("Second X " + convertMouseXPositionToAbsolutePosition(mouseX));
+    // System.out.println("Second Y " + convertMouseYPositionToAbsolutePosition(mouseY));
+    List<Map.Entry<String,Integer>> annotations = printAnnotations(set);
+    
+    experimentsInLastHighlight.clear();
+    for (Map.Entry<String,Integer> pair : annotations) {
+      if (pair.getKey().startsWith("E-")) {
+        experimentsInLastHighlight.add(pair.getKey());
+      }
+    }
+    drawPlotIntoBuffer();
+    
     firstDragCornerX = -1;
     firstDragCornerY = -1;
   }
   
   @Override
   public void keyPressed() {
+    processMovementRelatedKeys();
+    processAnnotationRelatedKeys();
+  }
+  
+  private List<Map.Entry<String,Integer>> printAnnotations(Set<Point> set) {
+    
+    // STEP 0 GET ANNOTATIONS
+    List<Map.Entry<String,Integer>> sortedList = getAnnotations(set);
+    
+    // STEP 1 PRINT OUT TO STDOUT
+    System.out.print("Size:" + set.size() + " \t");
+    for (Map.Entry<String,Integer> term : sortedList) {
+      System.out.print(term.getKey() + ":" + (float) term.getValue() / set.size() + ";\t");
+    }
+    System.out.println();
+    return sortedList;
+  }
+  
+  private List<Map.Entry<String,Integer>> getAnnotations(Set<Point> set) {
+    // STEP 0 SUM UP TERMS
+    Map<String,Integer> sumCounts = new HashMap<String,Integer>();
+    for (Point point : set) {
+      for (String term : point.getAnnotations()) {
+        if (sumCounts.get(term) != null) {
+          sumCounts.put(term, (1 + sumCounts.get(term)));
+        } else {
+          sumCounts.put(term, 1);
+        }
+      }
+    }
+    
+    // STEP 1 REMOBE BAD TERMS
+    removeBadTerms(sumCounts);
+    
+    // STEP 2 SORT FROM GREATEST TO LEAST
+    List<Map.Entry<String,Integer>> sortedList = new ArrayList<Entry<String,Integer>>();
+    sortedList.addAll(sumCounts.entrySet());
+    Collections.sort(sortedList, new BySize());
+    return sortedList;
+  }
+  
+  private void removeBadTerms(Map<String,Integer> map) {
+    map.remove("A");
+    map.remove("data");
+    map.remove("Experiment");
+    map.remove("RNA");
+    map.remove("microarray");
+    map.remove("Homo sapiens");
+    map.remove("gene");
+    map.remove("normal");
+    map.remove("year");
+    map.remove("age");
+    map.remove("protocol");
+    map.remove("organism_part");
+    map.remove("Human");
+    map.remove("whole organism");
+    map.remove("month");
+    map.remove("adult");
+    map.remove("female");
+    map.remove("male");
+    map.remove("hour");
+    map.remove("role");
+    map.remove("array");
+    map.remove("array design");
+    map.remove("submitted");
+    map.remove("organism");
+    map.remove("software");
+    map.remove("submitter");
+    map.remove("labeling");
+    map.remove("transcription profiling by array");
+    map.remove("control");
+    map.remove("quality");
+    map.remove("experimental factor");
+    map.remove("transcription profiling");
+    map.remove("publication status");
+    map.remove("hardware");
+    map.remove("feature_extraction");
+    map.remove("protocol parameter");
+    map.remove("replicate");
+    map.remove("data transformation");
+    map.remove("disease");
+    map.remove("time");
+    map.remove("treatment");
+    map.remove("sex");
+    map.remove("unit");
+    map.remove("cell_type");
+    map.remove("site");
+    
+    Iterator<String> itr = map.keySet().iterator();
+    String key;
+    while (itr.hasNext()) {
+      key = itr.next();
+      if (key.length() < 3) { // map.get(key) == 1 ||
+        itr.remove();
+      }
+    }
+    
+  }
+  
+  private void processAnnotationRelatedKeys() {
+    if (key == 'i') {
+      annotationsRectY -= 10;
+    }
+    if (key == 'k') {
+      annotationsRectY += 10;
+    }
+    if (key == 'j') {
+      annotationsRectX -= 10;
+    }
+    if (key == 'l') {
+      annotationsRectX += 10;
+    }
+    if (key == 'i' || key == 'k') {
+      printAnnotations(scatterPlot.extractEverythingInRectangularRegion(
+        convertMouseXPositionToBufferPosition(0), convertMouseXPositionToBufferPosition(annotationsRectY),
+        convertMouseXPositionToBufferPosition(width),
+        convertMouseXPositionToBufferPosition(annotationsRectY + ANNOTATIONSRECTSIZE), Type.SCALED));
+      rect(0, annotationsRectY, width, ANNOTATIONSRECTSIZE);
+    } else if (key == 'j' || key == 'l') {
+      printAnnotations(scatterPlot.extractEverythingInRectangularRegion(
+        convertMouseXPositionToBufferPosition(annotationsRectX), convertMouseXPositionToBufferPosition(0),
+        convertMouseXPositionToBufferPosition(annotationsRectX + ANNOTATIONSRECTSIZE),
+        convertMouseXPositionToBufferPosition(height), Type.SCALED));
+      rect(annotationsRectX, 0, ANNOTATIONSRECTSIZE, height);
+    }
+  }
+  
+  private void processMovementRelatedKeys() {
     if (key == 'x') {
       zoom += ZOOMSTEP;
       drawPlotIntoBuffer();
@@ -175,9 +376,24 @@ public class ProcessingPApplet extends PApplet {
       bufferYCoord += PIXELSTEP;
       updateImg();
     }
+    if (key == 'q') {
+      bufferXCoord = 0;
+      bufferYCoord = 0;
+      zoom = 1;
+      drawPlotIntoBuffer();
+    }
+    
   }
   
-  private double convertXPositionToAbsolutePosition(int xPosition) {
+  private int convertMouseXPositionToBufferPosition(int position) {
+    return position - PLOT_BORDER + bufferXCoord;
+  }
+  
+  private int convertMouseYPositionToBufferPosition(int position) {
+    return position - PLOT_BORDER + bufferYCoord;
+  }
+  
+  private double convertMouseXPositionToAbsolutePosition(int xPosition) {
     int position;
     if (xPosition < PLOT_BORDER) { // The mouse is too far left
       position = 0 + bufferXCoord;
@@ -191,7 +407,7 @@ public class ProcessingPApplet extends PApplet {
            + scatterPlot.getXAxisMin();
   }
   
-  private double convertYPositionToAbsolutePosition(int yPosition) {
+  private double convertMouseYPositionToAbsolutePosition(int yPosition) {
     int position;
     if (yPosition < PLOT_BORDER) { // The mouse is too far up
       position = 0 + bufferYCoord;
@@ -234,18 +450,32 @@ public class ProcessingPApplet extends PApplet {
   
   // The image in the buffer is zoom times larger
   private void drawPlotIntoBuffer() {
+    // STEP 0 SETUP
     scatterPlot.setScaledDimensions(bufferWidth(), bufferHeight());
     plotBuffer = createGraphics(bufferWidth(), bufferHeight(), P2D);
     plotBuffer.beginDraw();
-
+    // STEP 1 DRAW POINTS
+    plotBuffer.rectMode(CENTER);
     for (ColoredHashSetOfPoints set : scatterPlot.getSetsToDraw()) {
-      plotBuffer.strokeWeight(10);// TODO Delete
+      // plotBuffer.strokeWeight(10);// TODO Delete
       plotBuffer.stroke(color(set.getColor()[0], set.getColor()[1], set.getColor()[2]));
       for (Point point : set) {
         plotBuffer.point(point.getScaledXPosition(), point.getScaledYPosition());
+        // STEP 2 WHILE ITERATING, DRAW BOXES AROUND THE EXPERIMENTS JUST HIGHLIGHTED
+        for (String experimentAccession : experimentsInLastHighlight) {
+          if (point.getAnnotations().contains(experimentAccession)) {
+            plotBuffer.rect(point.getScaledXPosition(), point.getScaledYPosition(), 10, 10);
+            break;
+          }
+        }
       }
     }
+    plotBuffer.rectMode(CORNER);
+    
+    // STEP 3 END
     plotBuffer.endDraw();
+    
+    // STEP 3 UPDATE IMAGE
     updateImg();
   }
   
@@ -254,5 +484,19 @@ public class ProcessingPApplet extends PApplet {
       fill(255, 80);
       rect(firstDragCornerX, firstDragCornerY, mouseX - firstDragCornerX, mouseY - firstDragCornerY);
     }
+  }
+  
+  private class BySize implements Comparator<Map.Entry<String,Integer>> {
+    
+    public int compare(Entry<String,Integer> o1, Entry<String,Integer> o2) {
+      if (o1.getValue() < o2.getValue()) {
+        return 1;
+      } else if (o1.getValue() == o2.getValue()) {
+        return 0;
+      } else {
+        return -1;
+      }
+    }
+    
   }
 }
