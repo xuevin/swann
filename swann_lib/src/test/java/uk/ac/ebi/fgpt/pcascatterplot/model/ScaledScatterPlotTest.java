@@ -8,15 +8,15 @@ import java.util.HashSet;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.fgpt.pcascatterplot.model.EmptyScatterPlot.Type;
+import uk.ac.ebi.fgpt.pcascatterplot.model.ScaledScatterPlot.Type;
 
-public class EmptyScatterPlotTest {
+public class ScaledScatterPlotTest {
   
-  private EmptyScatterPlot newScatterPlot;
+  private ScaledScatterPlot newScatterPlot;
   
   @Before
   public void setUp() throws Exception {
-    newScatterPlot = new EmptyScatterPlot(200, 200);
+    newScatterPlot = new ScaledScatterPlot(200, 200);
   }
   
   @Test
@@ -36,10 +36,10 @@ public class EmptyScatterPlotTest {
     points.add(new Point(100, 100));
     
     newScatterPlot.addPointsToScatterPlot(points, 0, 0, 255);
-    assertEquals(100, newScatterPlot.getXAxisMax(), 0);
-    assertEquals(100, newScatterPlot.getXAxisMin(), 0);
-    assertEquals(100, newScatterPlot.getYAxisMax(), 0);
-    assertEquals(100, newScatterPlot.getYAxisMin(), 0);
+    assertEquals(100, newScatterPlot.getXAxisUnscaledMax(), 0);
+    assertEquals(100, newScatterPlot.getXAxisUnscaledMin(), 0);
+    assertEquals(100, newScatterPlot.getYAxisUnscaledMax(), 0);
+    assertEquals(100, newScatterPlot.getYAxisUnscaledMin(), 0);
     
   }
   
