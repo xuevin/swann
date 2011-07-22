@@ -11,6 +11,8 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.ac.ebi.fgpt.pcascatterplot.Matcher;
+
 public class MatcherTest {
   Matcher test;
   
@@ -20,7 +22,7 @@ public class MatcherTest {
         .toURI());
     File coordFile = new File(getClass().getClassLoader().getResource(
       "assembly2_30915x3.txt_with_names.copy.txt").toURI());
-    test = new Matcher(coordFile, annotationsFile);
+    test = new Matcher(coordFile, annotationsFile, 1, 2);
     
   }
   

@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import uk.ac.ebi.fgpt.pcascatterplot.utils.MathUtils;
+import uk.ac.ebi.fgpt.pcascatterplot.model.utils.MathUtils;
 
 public class ScaledScatterPlot {
   public enum Type {
@@ -16,10 +16,10 @@ public class ScaledScatterPlot {
   
   private int numberOfDataPoints;
   
-  private Double unscaledMin_X;
-  private Double unscaledMax_X;
-  private Double unscaledMin_Y;
-  private Double unscaledMax_Y;
+  private double unscaledMin_X = Double.MAX_VALUE;
+  private double unscaledMin_Y = Double.MAX_VALUE;
+  private double unscaledMax_X = Double.NEGATIVE_INFINITY;
+  private double unscaledMax_Y = Double.NEGATIVE_INFINITY;
   
   private int width;
   private int height;
@@ -34,43 +34,38 @@ public class ScaledScatterPlot {
   public void addPointsToScatterPlot(Collection<Point> points, int red, int green, int blue) {
     // Update scale
     updateMinAndMax(points);
+    
     // Give points a color
     ColoredHashSetOfPoints bluePoints = new ColoredHashSetOfPoints(red, green, blue);
     bluePoints.addAll(points);
     this.pointsToDraw.add(bluePoints);
     this.numberOfDataPoints = this.numberOfDataPoints + points.size();
     // update all positions
+    
+ 
     update();
   }
   
   private void updateMinAndMax(Collection<Point> points) {
     double xUnscaled;
     double yUnscaled;
+    
     for (Point point : points) {
       xUnscaled = point.getUnscaledXPosition();
       yUnscaled = point.getUnscaledYPosition();
-      try {
-        if (xUnscaled < unscaledMin_X) {
-          unscaledMin_X = xUnscaled;
-        }
-        if (xUnscaled > unscaledMax_X) {
-          unscaledMax_X = xUnscaled;
-        }
-        if (yUnscaled < unscaledMin_Y) {
-          unscaledMin_Y = yUnscaled;
-        }
-        if (yUnscaled > unscaledMax_Y) {
-          unscaledMax_Y = yUnscaled;
-        }
-      } catch (NullPointerException e) {
+      if (xUnscaled < unscaledMin_X) {
         unscaledMin_X = xUnscaled;
+      }
+      if (xUnscaled > unscaledMax_X) {
         unscaledMax_X = xUnscaled;
+      }
+      if (yUnscaled < unscaledMin_Y) {
         unscaledMin_Y = yUnscaled;
+      }
+      if (yUnscaled > unscaledMax_Y) {
         unscaledMax_Y = yUnscaled;
       }
-      
     }
-    
   }
   
   private void update() {

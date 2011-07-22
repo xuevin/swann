@@ -15,18 +15,24 @@ public class ViewOfScaledScatterPlot extends ScaledScatterPlot {
   
   private int width;
   private int height;
+  private int plotWidth;
+  private int plotHeight;
   
   public ViewOfScaledScatterPlot(int width, int height) {
     super(width, height);
     this.zoom = 1;
     this.width = width;
     this.height = height;
+    this.plotWidth = (int) (width * zoom);
+    this.plotHeight = (int) (height * zoom);
     this.plotOffset_X = 0;
     this.plotOffset_Y = 0;
   }
   
   public void zoomIn() {
     zoom += ZOOMSTEP;
+    this.plotWidth = (int) (width * zoom);
+    this.plotHeight = (int) (height * zoom);
     setScaledDimensions(getPlotWidth(), getPlotHeight());
   }
   
@@ -38,6 +44,8 @@ public class ViewOfScaledScatterPlot extends ScaledScatterPlot {
     if ((plotOffset_Y - PIXELSTEP) >= 0) {
       plotOffset_Y -= PIXELSTEP;
     }
+    this.plotWidth = (int) (width * zoom);
+    this.plotHeight = (int) (height * zoom);
     setScaledDimensions(getPlotWidth(), getPlotHeight());
   }
   
@@ -99,7 +107,7 @@ public class ViewOfScaledScatterPlot extends ScaledScatterPlot {
     }
     
     // Color remaining points
-    System.out.println(annotatedPointsCopy.size());
+    System.out.println(annotatedPointsCopy.size() + " Samples fall into \"OTHER\" ");
     addPointsToScatterPlot(annotatedPointsCopy, 144, 144, 144);
   }
   
@@ -133,11 +141,12 @@ public class ViewOfScaledScatterPlot extends ScaledScatterPlot {
   }
   
   public int getPlotWidth() {
-    return (int) (width * zoom);
+    return plotWidth;
+    
   }
   
   public int getPlotHeight() {
-    return (int) (height * zoom);
+    return plotHeight;
   }
   
   public Set<Point> extractEverythingInRectangularRegion(int xPosition1,

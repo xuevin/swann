@@ -8,15 +8,16 @@ import java.util.Map;
 import java.util.Set;
 
 import processing.core.PApplet;
+import processing.core.PFont;
 import processing.core.PGraphics;
 import processing.core.PImage;
+import uk.ac.ebi.fgpt.pcascatterplot.Matcher;
 import uk.ac.ebi.fgpt.pcascatterplot.model.ColoredHashSetOfPoints;
-import uk.ac.ebi.fgpt.pcascatterplot.model.Matcher;
 import uk.ac.ebi.fgpt.pcascatterplot.model.Point;
 import uk.ac.ebi.fgpt.pcascatterplot.model.ViewOfScaledScatterPlot;
-import uk.ac.ebi.fgpt.pcascatterplot.utils.AnnotationUtils;
+import uk.ac.ebi.fgpt.pcascatterplot.model.utils.AnnotationUtils;
 
-public class ProcessingPApplet extends PApplet{
+public class ProcessingPApplet extends PApplet {
   
   private ViewOfScaledScatterPlot view;
   
@@ -37,29 +38,35 @@ public class ProcessingPApplet extends PApplet{
   public void setup() {
     size(800, 800, P2D);
     background(0);
-    frame.setResizable(true);
     
     firstDragCornerX = -1;
     firstDragCornerY = -1;
     
     experimentsInLastHighlight = new HashSet<String>();
     
-    textFont(loadFont(this.getClass().getClassLoader().getResource("Arial-Black-14.vlw").getPath()));
+    try {
+      textFont(new PFont(this.getClass().getClassLoader().getResource("data/Arial-Black-14.vlw").openStream()));
+    } catch (IOException e1) {
+      e1.printStackTrace();
+      System.err.println("The default font could not be found!");
+    }
     
     // frameRate(30);
     view = new ViewOfScaledScatterPlot(width - 2 * PLOT_OFFSET, height - 2 * PLOT_OFFSET);
     
     File annotations = new File(args[0]);
     File coords = new File(args[1]);
+    int pca1 = Integer.parseInt(args[2]);
+    int pca2 = Integer.parseInt(args[3]);
     Matcher match;
     try {
-      match = new Matcher(coords, annotations);
+      match = new Matcher(coords, annotations, pca1, pca2);
       // colorPoints(match.getAnnotatedPoints(), "cell_line", "brain", "bone marrow","blood");
       // colorPoints(match.getAnnotatedPoints(), "cell_line", "bone marrow","blood");
       view.colorPoints(match.getAnnotatedPoints(), "cell_line", "bone marrow", "blood", "brain"); // Why does
       // adding lung remove this entire bottom section?
       // scatterPlot.addPointsToScatterPlot(match.getAnnotatedPoints(), 0, 0, 255);
-      // colorPoints(match.getAnnotatedPoints(), "E-GEOD-8507");
+      // view.colorPoints(match.getAnnotatedPoints(), "E-MTAB-54");
       
     } catch (IOException e) {
       e.printStackTrace();

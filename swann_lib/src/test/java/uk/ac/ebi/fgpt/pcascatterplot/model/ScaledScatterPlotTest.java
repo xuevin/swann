@@ -42,7 +42,18 @@ public class ScaledScatterPlotTest {
     assertEquals(100, newScatterPlot.getYAxisUnscaledMin(), 0);
     
   }
-  
+  @Test 
+  public void showThatAddingNegativeNumbersChangeTheRange(){
+    // Normally you don't want to plot only one point... You will get a divide by zero error.
+    Collection<Point> points = new HashSet<Point>();
+    points.add(new Point(-100, -100));
+    
+    newScatterPlot.addPointsToScatterPlot(points, 0, 0, 255);
+    assertEquals(-100, newScatterPlot.getXAxisUnscaledMax(), 0);
+    assertEquals(-100, newScatterPlot.getXAxisUnscaledMin(), 0);
+    assertEquals(-100, newScatterPlot.getYAxisUnscaledMax(), 0);
+    assertEquals(-100, newScatterPlot.getYAxisUnscaledMin(), 0);
+  }
   @Test
   public void testExtractEverythingInRegion() {
     assertEquals(0, newScatterPlot.extractEverythingInRectangularRegion(Float.MIN_VALUE, Float.MIN_VALUE,

@@ -1,7 +1,7 @@
-package uk.ac.ebi.fgpt.pcascatterplot.utils;
+package uk.ac.ebi.fgpt.pcascatterplot.model.utils;
 
 public class MathUtils {
-  public static float map(double value, double low1, double high1, float low2, float high2) {
+  public static int map(double value, double low1, double high1, float low2, float high2) {
     double range1 = high1 - low1;
     float range2 = high2 - low2;
     double dif = value - low1;
@@ -10,6 +10,6 @@ public class MathUtils {
     if(range1 ==0){
       System.err.println("DIVIDE BY ZERO");
     }
-    return low2 + howFarFromLow2;
+    return (int)(low2 + howFarFromLow2);
   }
 }

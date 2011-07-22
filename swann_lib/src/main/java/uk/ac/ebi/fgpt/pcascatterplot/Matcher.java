@@ -1,12 +1,15 @@
-package uk.ac.ebi.fgpt.pcascatterplot.model;
+package uk.ac.ebi.fgpt.pcascatterplot;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+
+import uk.ac.ebi.fgpt.pcascatterplot.model.Point;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -15,7 +18,7 @@ public class Matcher {
   private Map<String,Point> uniqueCelNameToPointMap = new HashMap<String,Point>();
   private Map<String,Collection<String>> uniqueExperimentToAnnotationsMapMap = new HashMap<String,Collection<String>>();
   
-  public Matcher(File coordFiles, File annotations) throws IOException {
+  public Matcher(File coordFiles, File annotations, int pca1, int pca2) throws IOException {
     // First parse the two files into a list of strings
     List<String> listOfValues = Files.readLines(coordFiles, Charsets.UTF_8);
     List<String> listOfAnnotations = Files.readLines(annotations, Charsets.UTF_8);
@@ -27,10 +30,8 @@ public class Matcher {
     for (String string : listOfValues) {
       String[] columns = string.split("\t");
       
-      // FOR TESTING PURPOSES, I AM HARDCODING THE COLUMNS I WANT TO PLOT
-      // TODO Make this a function
-      uniqueCelNameToPointMap.put(columns[0].replace("\"", ""), new Point(Double.parseDouble(columns[1]),
-          Double.parseDouble(columns[3])));
+      uniqueCelNameToPointMap.put(columns[0].replace("\"", ""), new Point(Double.parseDouble(columns[pca1]),
+          Double.parseDouble(columns[pca2])));
     }
     // Store listOfAnnotations as a experiment to annotations map
     for (String string : listOfAnnotations) {
@@ -38,7 +39,7 @@ public class Matcher {
       String experiment = columns[0];
       Collection<String> collectionOfAnnotations = convertAnnotationsToCollectoin(columns[4]);
       collectionOfAnnotations.add(experiment);
-      uniqueExperimentToAnnotationsMapMap.put(experiment,collectionOfAnnotations);
+      uniqueExperimentToAnnotationsMapMap.put(experiment, collectionOfAnnotations);
     }
     
     // Now reannotate the points in uniqueCelNameToPointMap
@@ -46,11 +47,18 @@ public class Matcher {
       String experiment = uniqueCELName.split("_")[0];
       uniqueCelNameToPointMap.get(uniqueCELName).setAnnotations(
         uniqueExperimentToAnnotationsMapMap.get(experiment));
+      uniqueCelNameToPointMap.get(uniqueCELName).setExperiment(experiment);
     }
   }
   
   public Collection<Point> getAnnotatedPoints() {
     return uniqueCelNameToPointMap.values();
+  }
+  
+  public ArrayList<Point> getSerializedAnnotatedPoints() {
+    ArrayList<Point> points = new ArrayList<Point>();
+    points.addAll(uniqueCelNameToPointMap.values());
+    return points;
   }
   
   private Collection<String> convertAnnotationsToCollectoin(String string) {

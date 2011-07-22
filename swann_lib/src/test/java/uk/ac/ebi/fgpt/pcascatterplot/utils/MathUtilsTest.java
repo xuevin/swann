@@ -5,6 +5,8 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.ac.ebi.fgpt.pcascatterplot.model.utils.MathUtils;
+
 public class MathUtilsTest {
   
   @Before

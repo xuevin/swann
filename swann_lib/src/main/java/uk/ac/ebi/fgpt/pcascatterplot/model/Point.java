@@ -1,18 +1,28 @@
 package uk.ac.ebi.fgpt.pcascatterplot.model;
 
+import java.io.Serializable;
 import java.util.Collection;
 
-public class Point {
-  private Float scaledXPosition;
-  private Float scaledYPosition;
+public class Point implements Serializable {
+  
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
+  
+  private int scaledXPosition;
+  private int scaledYPosition;
   private double unscaledXPositoin;
   private double unscaledYPosition;
   private Collection<String> annotations;
+  private String experiment;
+  
+  public Point() {}
   
   public Point(double unscaledXPosition,
                double unscaledYPosition,
-               float scaledXPosition,
-               float scaledYPosition) {
+               int scaledXPosition,
+               int scaledYPosition) {
     this.unscaledXPositoin = unscaledXPosition;
     this.unscaledYPosition = unscaledYPosition;
     this.scaledXPosition = scaledXPosition;
@@ -24,19 +34,19 @@ public class Point {
     this.unscaledYPosition = unscaledYPosition;
   }
   
-  public void setScaledXPosition(float scaledXPosition) {
+  public void setScaledXPosition(int scaledXPosition) {
     this.scaledXPosition = scaledXPosition;
   }
   
-  public float getScaledXPosition() {
+  public int getScaledXPosition() {
     return scaledXPosition;
   }
   
-  public void setScaledYPosition(float scaledYPosition) {
+  public void setScaledYPosition(int scaledYPosition) {
     this.scaledYPosition = scaledYPosition;
   }
   
-  public float getScaledYPosition() {
+  public int getScaledYPosition() {
     return scaledYPosition;
   }
   
@@ -70,5 +80,12 @@ public class Point {
       builder.append(string + "\t");
     }
     return builder.toString();
+  }
+  public void setExperiment(String experiment){
+    this.experiment = experiment;
+  }
+  
+  public String getExperiment() {
+    return experiment;
   }
 }
