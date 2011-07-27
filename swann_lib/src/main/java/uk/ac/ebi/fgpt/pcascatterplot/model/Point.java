@@ -16,6 +16,7 @@ public class Point implements Serializable {
   private double unscaledYPosition;
   private Collection<String> annotations;
   private String experiment;
+  private String sampleName;
   
   public Point() {}
   
@@ -87,5 +88,11 @@ public class Point implements Serializable {
   
   public String getExperiment() {
     return experiment;
+  }
+  public void setSampleName(String sampleName){
+    this.sampleName = sampleName;
+  }
+  public String getSampleName(){
+    return sampleName;
   }
 }

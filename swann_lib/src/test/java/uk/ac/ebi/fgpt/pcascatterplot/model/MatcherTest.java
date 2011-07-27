@@ -1,12 +1,11 @@
 package uk.ac.ebi.fgpt.pcascatterplot.model;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;

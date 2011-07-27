@@ -1,8 +1,10 @@
 package uk.ac.ebi.fgpt.pcascatterplot.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.Map;
 
 import uk.ac.ebi.fgpt.pcascatterplot.model.utils.MathUtils;
 
@@ -12,7 +14,7 @@ public class ScaledScatterPlot {
     UNSCALED
   }
   
-  private HashSet<ColoredHashSetOfPoints> pointsToDraw;
+  private Collection<ColoredHashSetOfPoints> pointsToDraw;
   
   private int numberOfDataPoints;
   
@@ -31,18 +33,17 @@ public class ScaledScatterPlot {
     this.numberOfDataPoints = 0;
   }
   
-  public void addPointsToScatterPlot(Collection<Point> points, int red, int green, int blue) {
+  public void addColoredPointsToScatterPlot(Collection<Point> points, Color color) {
     // Update scale
     updateMinAndMax(points);
     
     // Give points a color
-    ColoredHashSetOfPoints bluePoints = new ColoredHashSetOfPoints(red, green, blue);
-    bluePoints.addAll(points);
-    this.pointsToDraw.add(bluePoints);
+    ColoredHashSetOfPoints coloredPoints = new ColoredHashSetOfPoints(color);
+    coloredPoints.addAll(points);
+    this.pointsToDraw.add(coloredPoints);
     this.numberOfDataPoints = this.numberOfDataPoints + points.size();
     // update all positions
     
- 
     update();
   }
   
@@ -108,11 +109,13 @@ public class ScaledScatterPlot {
     return unscaledMax_Y;
   }
   
-  public Set<Point> extractEverythingInRectangularRegion(float xPosition1,
-                                                         float yPosition1,
-                                                         float xPosition2,
-                                                         float yPosition2,
-                                                         Type type) {
+  public Collection<Point> extractEverythingInRectangularRegion(float xPosition1,
+                                                                float yPosition1,
+                                                                float xPosition2,
+                                                                float yPosition2,
+                                                                Type type) {
+    long time = System.currentTimeMillis();
+    
     double largerX;
     double largerY;
     double smallerX;
@@ -132,26 +135,89 @@ public class ScaledScatterPlot {
       largerY = yPosition2;
       smallerY = yPosition1;
     }
-    Set<Point> pointsThatFallInRegion = new HashSet<Point>();
-    for (ColoredHashSetOfPoints set : pointsToDraw) {
-      {
+    Collection<Point> pointsThatFallInRegion = new ArrayList<Point>(); // what data type should this be...
+    if (type == Type.SCALED) {
+      for (ColoredHashSetOfPoints set : pointsToDraw) {
         for (Point point : set) {
-          if (type == Type.SCALED) {
-            if (point.getScaledXPosition() >= smallerX && point.getScaledXPosition() <= largerX) {
-              if (point.getScaledYPosition() >= smallerY && point.getScaledYPosition() <= largerY) {
-                pointsThatFallInRegion.add(point);
-              }
-            }
-          } else if (type == Type.UNSCALED) {
-            if (point.getUnscaledXPosition() >= smallerX && point.getUnscaledXPosition() <= largerX) {
-              if (point.getUnscaledYPosition() >= smallerY && point.getUnscaledYPosition() <= largerY) {
-                pointsThatFallInRegion.add(point);
-              }
-            }
+          int scaledX = point.getScaledXPosition();
+          int scaledY = point.getScaledYPosition();
+          if (scaledX >= smallerX && scaledX <= largerX && scaledY >= smallerY && scaledY <= largerY) {
+            pointsThatFallInRegion.add(point);
+          }
+        }
+      }
+    } else {
+      for (ColoredHashSetOfPoints set : pointsToDraw) {
+        for (Point point : set) {
+          double unscaledX = point.getUnscaledXPosition();
+          double unscaledY = point.getUnscaledYPosition();
+          if (unscaledX >= smallerX && unscaledX <= largerX && unscaledY >= smallerY && unscaledY <= largerY) {
+            pointsThatFallInRegion.add(point);
           }
         }
       }
     }
+    
+    System.out.println("Extracting from a region took :" + (System.currentTimeMillis() - time));
     return pointsThatFallInRegion;
+  }
+  
+  public void clearAllPoints() {
+    this.pointsToDraw.clear();
+  }
+  
+  public void setColoredPoints(Collection<Point> annotatedPoints, Map<String,Color> termToColor) {
+    long time = System.currentTimeMillis();
+    updateMinAndMax(annotatedPoints);
+    this.numberOfDataPoints = annotatedPoints.size();
+    
+    HashMap<String,ColoredHashSetOfPoints> termToSet = new HashMap<String,ColoredHashSetOfPoints>();
+    for (String term : termToColor.keySet()) {
+      termToSet.put(term, new ColoredHashSetOfPoints(termToColor.get(term)));
+    }
+    termToSet.put("other", new ColoredHashSetOfPoints(new Color(155, 155, 155)));
+    
+    // Iterate through all of the points
+    for (Point point : annotatedPoints) {
+      termToSet.get(getGroup(point.getAnnotations(), termToColor)).add(point);
+    }
+    pointsToDraw = termToSet.values();
+    update();
+    System.out.println("Coloring takes " + (System.currentTimeMillis() - time));
+    
+  }
+  
+  public void recolor(Map<String,Color> termToColor) {
+    long time = System.currentTimeMillis();
+    HashMap<String,ColoredHashSetOfPoints> termToSet = new HashMap<String,ColoredHashSetOfPoints>();
+    for (String term : termToColor.keySet()) {
+      termToSet.put(term, new ColoredHashSetOfPoints(termToColor.get(term)));
+    }
+    termToSet.put("other", new ColoredHashSetOfPoints(new Color(155, 155, 155)));
+    
+    // Iterate through all of the points
+    for (ColoredHashSetOfPoints set : pointsToDraw) {
+      for (Point point : set) {
+        termToSet.get(getGroup(point.getAnnotations(), termToColor)).add(point);
+      }
+    }
+    pointsToDraw = termToSet.values();
+    System.out.println("Recoloring takes " + (System.currentTimeMillis() - time));
+  }
+  
+  private String getGroup(Collection<String> annotations, Map<String,Color> termToColor) {
+    String termGroup = "other";
+    boolean foundOnce = false;
+    for (String term : termToColor.keySet()) {
+      if (annotations.contains(term) && foundOnce == false) {
+        termGroup = term;
+        foundOnce = true;
+      } else if (annotations.contains(term) && foundOnce == true) {
+        termGroup = "other";
+        foundOnce = false;
+        break;
+      } else {}
+    }
+    return termGroup;
   }
 }

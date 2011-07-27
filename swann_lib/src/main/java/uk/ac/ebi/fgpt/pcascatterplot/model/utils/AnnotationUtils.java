@@ -1,6 +1,7 @@
 package uk.ac.ebi.fgpt.pcascatterplot.model.utils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -13,10 +14,10 @@ import java.util.Map.Entry;
 import uk.ac.ebi.fgpt.pcascatterplot.model.Point;
 
 public class AnnotationUtils {
-  public static List<Map.Entry<String,Integer>> printAnnotations(Set<Point> set) {
+  public static Collection<Map.Entry<String,Integer>> printAnnotations(Collection <Point> set) {
     
     // STEP 0 GET ANNOTATIONS
-    List<Map.Entry<String,Integer>> sortedList = getAnnotations(set);
+    Collection<Map.Entry<String,Integer>> sortedList = getSortedCollectionOfAnnotations(set);
     
     // STEP 1 PRINT OUT TO STDOUT
     System.out.print("Size:" + set.size() + " \t");
@@ -29,7 +30,9 @@ public class AnnotationUtils {
     return sortedList;
   }
   
-  public static List<Map.Entry<String,Integer>> getAnnotations(Set<Point> set) {
+  public static Collection<Map.Entry<String,Integer>> getSortedCollectionOfAnnotations(Collection<Point> set) {
+    long time = System.currentTimeMillis();
+    
     // STEP 0 SUM UP TERMS
     Map<String,Integer> sumCounts = new HashMap<String,Integer>();
     for (Point point : set) {
@@ -49,6 +52,8 @@ public class AnnotationUtils {
     List<Map.Entry<String,Integer>> sortedList = new ArrayList<Entry<String,Integer>>();
     sortedList.addAll(sumCounts.entrySet());
     Collections.sort(sortedList, new BySize());
+    
+    System.out.println("The annotations part took : " + (System.currentTimeMillis()-time));
     return sortedList;
   }
   

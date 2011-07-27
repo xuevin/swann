@@ -2,8 +2,9 @@ package uk.ac.ebi.fgpt.pcascatterplot.view;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,6 +13,7 @@ import processing.core.PFont;
 import processing.core.PGraphics;
 import processing.core.PImage;
 import uk.ac.ebi.fgpt.pcascatterplot.Matcher;
+import uk.ac.ebi.fgpt.pcascatterplot.model.Color;
 import uk.ac.ebi.fgpt.pcascatterplot.model.ColoredHashSetOfPoints;
 import uk.ac.ebi.fgpt.pcascatterplot.model.Point;
 import uk.ac.ebi.fgpt.pcascatterplot.model.ViewOfScaledScatterPlot;
@@ -45,7 +47,7 @@ public class ProcessingPApplet extends PApplet {
     experimentsInLastHighlight = new HashSet<String>();
     
     try {
-      textFont(new PFont(this.getClass().getClassLoader().getResource("data/Arial-Black-14.vlw").openStream()));
+      textFont(new PFont(this.getClass().getClassLoader().getResourceAsStream("data/Arial-Black-14.vlw")));
     } catch (IOException e1) {
       e1.printStackTrace();
       System.err.println("The default font could not be found!");
@@ -61,12 +63,18 @@ public class ProcessingPApplet extends PApplet {
     Matcher match;
     try {
       match = new Matcher(coords, annotations, pca1, pca2);
-      // colorPoints(match.getAnnotatedPoints(), "cell_line", "brain", "bone marrow","blood");
-      // colorPoints(match.getAnnotatedPoints(), "cell_line", "bone marrow","blood");
-      view.colorPoints(match.getAnnotatedPoints(), "cell_line", "bone marrow", "blood", "brain"); // Why does
-      // adding lung remove this entire bottom section?
-      // scatterPlot.addPointsToScatterPlot(match.getAnnotatedPoints(), 0, 0, 255);
-      // view.colorPoints(match.getAnnotatedPoints(), "E-MTAB-54");
+      
+      Map<String,Color> mapToColor = new HashMap<String,Color>();
+      mapToColor.put("cell_line", new Color(0, 255, 0));
+      mapToColor.put("bone marrow", new Color(255, 255, 0));
+      mapToColor.put("blood", new Color(255, 0, 0));
+      mapToColor.put("brain", new Color(0, 0, 255));
+      
+      view.setColoredPoints(match.getAnnotatedPoints(), mapToColor); // Why does
+      
+      // Map<String,Color> mapToColor2 = new HashMap<String,Color>();
+      // mapToColor2.put("blood", new Color(0, 0, 255));
+      // view.recolor(mapToColor2);
       
     } catch (IOException e) {
       e.printStackTrace();
@@ -114,17 +122,21 @@ public class ProcessingPApplet extends PApplet {
   
   @Override
   public void mouseReleased() {
-    Set<Point> set = view.extractEverythingInRectangularRegion(
+    Collection<Point> set = view.extractEverythingInRectangularRegion(
       convertMouseXPositionToViewPosition(firstDragCornerX),
       convertMouseYPositionToViewPosition(firstDragCornerY), convertMouseXPositionToViewPosition(mouseX),
       convertMouseYPositionToViewPosition(mouseY));
+    
+    // for(Point po:set){
+    // System.out.println(po.getSampleName());
+    // }
     
     // DEBUGGING PRINTOUT
     // System.out.println("First X " + convertMouseXPositionToAbsolutePosition(firstDragCornerX));
     // System.out.println("First Y " + convertMouseYPositionToAbsolutePosition(firstDragCornerY));
     // System.out.println("Second X " + convertMouseXPositionToAbsolutePosition(mouseX));
     // System.out.println("Second Y " + convertMouseYPositionToAbsolutePosition(mouseY));
-    List<Map.Entry<String,Integer>> annotations = AnnotationUtils.printAnnotations(set);
+    Collection<Map.Entry<String,Integer>> annotations = AnnotationUtils.printAnnotations(set);
     
     experimentsInLastHighlight.clear();
     for (Map.Entry<String,Integer> pair : annotations) {
@@ -256,7 +268,7 @@ public class ProcessingPApplet extends PApplet {
     // STEP 1 DRAW POINTS
     plotBuffer.rectMode(CENTER);
     for (ColoredHashSetOfPoints set : view.getSetsToDraw()) {
-      plotBuffer.stroke(color(set.getColor()[0], set.getColor()[1], set.getColor()[2]));
+      plotBuffer.stroke(color(set.getColor().getRed(), set.getColor().getGreen(), set.getColor().getBlue()));
       for (Point point : set) {
         plotBuffer.point(point.getScaledXPosition(), point.getScaledYPosition());
         // STEP 2 WHILE ITERATING, DRAW BOXES AROUND THE EXPERIMENTS JUST HIGHLIGHTED

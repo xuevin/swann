@@ -2,6 +2,7 @@ package uk.ac.ebi.fgpt.pcascatterplot.model;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class ViewOfScaledScatterPlot extends ScaledScatterPlot {
@@ -73,44 +74,6 @@ public class ViewOfScaledScatterPlot extends ScaledScatterPlot {
     }
   }
   
-  // TODO Idk if i want this public
-  public void colorPoints(Collection<Point> annotatedPoints, String... termsToFilterOn) {
-    HashSet<Point> annotatedPointsCopy = new HashSet<Point>(annotatedPoints);
-    int[][] colorMap = new int[4][3];
-    colorMap[0] = new int[] {255, 0, 0};
-    colorMap[1] = new int[] {0, 255, 0};
-    colorMap[2] = new int[] {0, 0, 255};
-    colorMap[3] = new int[] {255, 0, 255};
-    
-    int i = 0;
-    for (String annotation : termsToFilterOn) {
-      Set<Point> coloredSet = new HashSet<Point>();
-      for (Point point : annotatedPoints) {
-        // Make sure that the point only has one of the annotations
-        if (point.getAnnotations().contains(annotation)) {
-          boolean foundOnce = true;
-          for (String otherTerm : termsToFilterOn) {
-            if (otherTerm != annotation) {
-              if (point.getAnnotations().contains(otherTerm)) {
-                foundOnce = false;
-              }
-            }
-          }
-          if (foundOnce) {
-            coloredSet.add(point);
-            annotatedPointsCopy.remove(point);
-          }
-        }
-      }
-      addPointsToScatterPlot(coloredSet, colorMap[i][0], colorMap[i][1], colorMap[i][2]);
-      i++;
-    }
-    
-    // Color remaining points
-    System.out.println(annotatedPointsCopy.size() + " Samples fall into \"OTHER\" ");
-    addPointsToScatterPlot(annotatedPointsCopy, 144, 144, 144);
-  }
-  
   public int getYAxisUpper() {
     double range = getYAxisUnscaledMax() - getYAxisUnscaledMin();
     double relativePositionTop = plotOffset_Y / (double) getPlotHeight();
@@ -149,10 +112,10 @@ public class ViewOfScaledScatterPlot extends ScaledScatterPlot {
     return plotHeight;
   }
   
-  public Set<Point> extractEverythingInRectangularRegion(int xPosition1,
-                                                         int yPosition1,
-                                                         int xPosition2,
-                                                         int yPosition2) {
+  public Collection<Point> extractEverythingInRectangularRegion(int xPosition1,
+                                                                int yPosition1,
+                                                                int xPosition2,
+                                                                int yPosition2) {
     return extractEverythingInRectangularRegion(xPosition1, yPosition1, xPosition2, yPosition2, Type.SCALED);
   }
   
@@ -178,5 +141,4 @@ public class ViewOfScaledScatterPlot extends ScaledScatterPlot {
   public int getHeight() {
     return height;
   }
-  
 }

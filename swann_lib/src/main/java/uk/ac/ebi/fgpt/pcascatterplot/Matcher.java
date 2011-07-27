@@ -48,6 +48,7 @@ public class Matcher {
       uniqueCelNameToPointMap.get(uniqueCELName).setAnnotations(
         uniqueExperimentToAnnotationsMapMap.get(experiment));
       uniqueCelNameToPointMap.get(uniqueCELName).setExperiment(experiment);
+      uniqueCelNameToPointMap.get(uniqueCELName).setSampleName(uniqueCELName);
     }
   }
   
