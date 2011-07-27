@@ -10,10 +10,10 @@ import java.util.Collection;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.fgpt.pcascatterplot.Matcher;
+import uk.ac.ebi.fgpt.pcascatterplot.DataProviderImpl;
 
-public class MatcherTest {
-  Matcher test;
+public class DataProviderTest {
+  DataProviderImpl test;
   
   @Before
   public void setUp() throws Exception {
@@ -21,7 +21,7 @@ public class MatcherTest {
         .toURI());
     File coordFile = new File(getClass().getClassLoader().getResource(
       "assembly2_30915x3.txt_with_names.copy.txt").toURI());
-    test = new Matcher(coordFile, annotationsFile, 1, 2);
+    test = new DataProviderImpl(coordFile, annotationsFile, 1, 2);
     
   }
   

@@ -12,7 +12,7 @@ import processing.core.PApplet;
 import processing.core.PFont;
 import processing.core.PGraphics;
 import processing.core.PImage;
-import uk.ac.ebi.fgpt.pcascatterplot.Matcher;
+import uk.ac.ebi.fgpt.pcascatterplot.DataProviderImpl;
 import uk.ac.ebi.fgpt.pcascatterplot.model.Color;
 import uk.ac.ebi.fgpt.pcascatterplot.model.ColoredHashSetOfPoints;
 import uk.ac.ebi.fgpt.pcascatterplot.model.Point;
@@ -60,9 +60,9 @@ public class ProcessingPApplet extends PApplet {
     File coords = new File(args[1]);
     int pca1 = Integer.parseInt(args[2]);
     int pca2 = Integer.parseInt(args[3]);
-    Matcher match;
+    DataProviderImpl match;
     try {
-      match = new Matcher(coords, annotations, pca1, pca2);
+      match = new DataProviderImpl(coords, annotations, pca1, pca2);
       
       Map<String,Color> mapToColor = new HashMap<String,Color>();
       mapToColor.put("cell_line", new Color(0, 255, 0));
@@ -70,8 +70,7 @@ public class ProcessingPApplet extends PApplet {
       mapToColor.put("blood", new Color(255, 0, 0));
       mapToColor.put("brain", new Color(0, 0, 255));
       
-      view.setColoredPoints(match.getAnnotatedPoints(), mapToColor); // Why does
-      
+      view.setColoredPoints(match.getAnnotatedPoints(), mapToColor); 
       // Map<String,Color> mapToColor2 = new HashMap<String,Color>();
       // mapToColor2.put("blood", new Color(0, 0, 255));
       // view.recolor(mapToColor2);

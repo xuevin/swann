@@ -14,11 +14,11 @@ import uk.ac.ebi.fgpt.pcascatterplot.model.Point;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
-public class Matcher {
+public class DataProviderImpl {
   private Map<String,Point> uniqueCelNameToPointMap = new HashMap<String,Point>();
   private Map<String,Collection<String>> uniqueExperimentToAnnotationsMapMap = new HashMap<String,Collection<String>>();
   
-  public Matcher(File coordFiles, File annotations, int pca1, int pca2) throws IOException {
+  public DataProviderImpl(File coordFiles, File annotations, int pca1, int pca2) throws IOException {
     // First parse the two files into a list of strings
     List<String> listOfValues = Files.readLines(coordFiles, Charsets.UTF_8);
     List<String> listOfAnnotations = Files.readLines(annotations, Charsets.UTF_8);
@@ -29,7 +29,6 @@ public class Matcher {
     
     for (String string : listOfValues) {
       String[] columns = string.split("\t");
-      
       uniqueCelNameToPointMap.put(columns[0].replace("\"", ""), new Point(Double.parseDouble(columns[pca1]),
           Double.parseDouble(columns[pca2])));
     }
@@ -37,12 +36,14 @@ public class Matcher {
     for (String string : listOfAnnotations) {
       String[] columns = string.split("\t");
       String experiment = columns[0];
-      Collection<String> collectionOfAnnotations = convertAnnotationsToCollectoin(columns[4]);
-      collectionOfAnnotations.add(experiment);
+      Collection<String> collectionOfAnnotations = convertAnnotationsToCollection(columns[4]);
+      collectionOfAnnotations.add(experiment); // Add accession into list of annotations
       uniqueExperimentToAnnotationsMapMap.put(experiment, collectionOfAnnotations);
     }
-    
-    // Now reannotate the points in uniqueCelNameToPointMap
+    annotatePoints();
+  }
+  
+  public void annotatePoints() {
     for (String uniqueCELName : uniqueCelNameToPointMap.keySet()) {
       String experiment = uniqueCELName.split("_")[0];
       uniqueCelNameToPointMap.get(uniqueCELName).setAnnotations(
@@ -56,13 +57,13 @@ public class Matcher {
     return uniqueCelNameToPointMap.values();
   }
   
-  public ArrayList<Point> getSerializedAnnotatedPoints() {
+  public ArrayList<Point> getAnnotatedPointsAsArrayList() {
     ArrayList<Point> points = new ArrayList<Point>();
     points.addAll(uniqueCelNameToPointMap.values());
     return points;
   }
   
-  private Collection<String> convertAnnotationsToCollectoin(String string) {
+  private Collection<String> convertAnnotationsToCollection(String string) {
     String[] annotationsAsArray = string.split(";");
     Collection<String> map = new HashSet<String>();
     for (String termCountPair : annotationsAsArray) {

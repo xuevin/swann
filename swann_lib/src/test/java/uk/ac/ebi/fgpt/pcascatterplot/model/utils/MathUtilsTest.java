@@ -1,4 +1,4 @@
-package uk.ac.ebi.fgpt.pcascatterplot.utils;
+package uk.ac.ebi.fgpt.pcascatterplot.model.utils;
 
 import static org.junit.Assert.assertEquals;
 
