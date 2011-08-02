@@ -1,11 +1,11 @@
-package uk.ac.ebi.fgpt.pcascatterplot.model.utils;
+package uk.ac.ebi.fgpt.swann.model.utils;
 
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.fgpt.pcascatterplot.model.utils.MathUtils;
+import uk.ac.ebi.fgpt.swann.model.utils.MathUtils;
 
 public class MathUtilsTest {
   

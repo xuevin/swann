@@ -1,4 +1,4 @@
-package uk.ac.ebi.fgpt.pcascatterplot.model;
+package uk.ac.ebi.fgpt.swann.model;
 
 import static org.junit.Assert.*;
 
@@ -8,7 +8,10 @@ import java.util.HashSet;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.fgpt.pcascatterplot.model.ScaledScatterPlot.Type;
+import uk.ac.ebi.fgpt.swann.model.Color;
+import uk.ac.ebi.fgpt.swann.model.Point;
+import uk.ac.ebi.fgpt.swann.model.ScaledScatterPlot;
+import uk.ac.ebi.fgpt.swann.model.ScaledScatterPlot.Type;
 
 public class ScaledScatterPlotTest {
   

@@ -1,4 +1,4 @@
-package uk.ac.ebi.fgpt.pcascatterplot.model;
+package uk.ac.ebi.fgpt.swann.model;
 
 import java.io.Serializable;
 import java.util.Collection;

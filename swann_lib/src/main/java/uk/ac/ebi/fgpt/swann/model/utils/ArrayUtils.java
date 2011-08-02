@@ -1,6 +1,6 @@
-package uk.ac.ebi.fgpt.pcascatterplot.model.utils;
+package uk.ac.ebi.fgpt.swann.model.utils;
 
-import uk.ac.ebi.fgpt.pcascatterplot.model.Vector;
+import uk.ac.ebi.fgpt.swann.model.Vector;
 
 public class ArrayUtils {
   /**

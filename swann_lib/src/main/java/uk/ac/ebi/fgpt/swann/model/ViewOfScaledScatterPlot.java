@@ -1,9 +1,6 @@
-package uk.ac.ebi.fgpt.pcascatterplot.model;
+package uk.ac.ebi.fgpt.swann.model;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 public class ViewOfScaledScatterPlot extends ScaledScatterPlot {
   

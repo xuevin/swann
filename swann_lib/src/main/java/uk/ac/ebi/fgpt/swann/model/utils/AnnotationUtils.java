@@ -1,4 +1,4 @@
-package uk.ac.ebi.fgpt.pcascatterplot.model.utils;
+package uk.ac.ebi.fgpt.swann.model.utils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import uk.ac.ebi.fgpt.pcascatterplot.model.Point;
+import uk.ac.ebi.fgpt.swann.model.Point;
 
 public class AnnotationUtils {
   public static Collection<Map.Entry<String,Integer>> printAnnotations(Collection <Point> set) {

@@ -1,4 +1,4 @@
-package uk.ac.ebi.fgpt.pcascatterplot.model;
+package uk.ac.ebi.fgpt.swann.model;
 
 public class Vector {
   private double[] values;

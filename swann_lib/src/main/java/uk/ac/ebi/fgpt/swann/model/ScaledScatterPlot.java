@@ -1,4 +1,4 @@
-package uk.ac.ebi.fgpt.pcascatterplot.model;
+package uk.ac.ebi.fgpt.swann.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import uk.ac.ebi.fgpt.pcascatterplot.model.utils.MathUtils;
+import uk.ac.ebi.fgpt.swann.model.utils.MathUtils;
 
 public class ScaledScatterPlot {
   public enum Type {

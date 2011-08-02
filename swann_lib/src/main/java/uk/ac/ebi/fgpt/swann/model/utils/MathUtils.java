@@ -1,4 +1,4 @@
-package uk.ac.ebi.fgpt.pcascatterplot.model.utils;
+package uk.ac.ebi.fgpt.swann.model.utils;
 
 public class MathUtils {
   public static int map(double value, double low1, double high1, float low2, float high2) {

@@ -2,21 +2,15 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.ac.ebi.fgpt</groupId>
-	<artifactId>pcascatterplot</artifactId>
+	<artifactId>swann_lib</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>pcascatterplot</name>
-	<description>A prototype application for visually interacting with pca scatterplots</description>
+	<name>swann_lib</name>
+	<description>Library for manipulating scatter plot with annotations</description>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
 	<build>
-<!--		<resources>-->
-<!--			<resource>-->
-<!--				<directory>src/main/</directory>-->
-<!--				<includes>-->
-<!--					<include>**/*.vlw</include>-->
-<!--					<include>**/*.java</include>-->
-<!--					<include>**/*.gwt.xml</include>-->
-<!--				</includes>-->
-<!--			</resource>-->
-<!--		</resources>-->
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -29,57 +23,11 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.2</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<mainClass>uk.ac.ebi.fgpt.pcascatterplot.Main</mainClass>
-						</manifest>
-					</archive>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-				</configuration>
-				<executions>
-					<execution>
-						<id>make-assembly</id>
-						<phase>package</phase>
-						<goals>
-							<goal>attached</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
-				</configuration>
-			</plugin>
 		</plugins>
 	</build>
 
 
 	<dependencies>
-		<dependency>
-			<groupId>commons-cli</groupId>
-			<artifactId>commons-cli</artifactId>
-			<version>1.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.processing</groupId>
-			<artifactId>processing-core</artifactId>
-			<version>1.5.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>r09</version>
-		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
