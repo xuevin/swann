@@ -14,7 +14,7 @@ public class ScaledScatterPlot {
     UNSCALED
   }
   
-  private Collection<ColoredHashSetOfPoints> pointsToDraw;
+  private Collection<ColoredHashSetOfPoints> allPoints;
   
   private int numberOfDataPoints;
   
@@ -26,11 +26,16 @@ public class ScaledScatterPlot {
   private int width;
   private int height;
   
+  private String OTHER = "_OTHER_";
+  
+  private HashMap<String,ColoredHashSetOfPoints> annotationToSetOfPoints;
+  
   public ScaledScatterPlot(int width, int height) {
     this.width = width;
     this.height = height;
-    this.pointsToDraw = new HashSet<ColoredHashSetOfPoints>();
+    this.allPoints = new HashSet<ColoredHashSetOfPoints>();
     this.numberOfDataPoints = 0;
+    this.annotationToSetOfPoints = new HashMap<String,ColoredHashSetOfPoints>();
   }
   
   public void addColoredPointsToScatterPlot(Collection<Point> points, Color color) {
@@ -40,7 +45,7 @@ public class ScaledScatterPlot {
     // Give points a color
     ColoredHashSetOfPoints coloredPoints = new ColoredHashSetOfPoints(color);
     coloredPoints.addAll(points);
-    this.pointsToDraw.add(coloredPoints);
+    this.allPoints.add(coloredPoints);
     this.numberOfDataPoints = this.numberOfDataPoints + points.size();
     // update all positions
     
@@ -71,7 +76,7 @@ public class ScaledScatterPlot {
   
   private void update() {
     // iterate through the colors
-    for (ColoredHashSetOfPoints set : pointsToDraw) {
+    for (ColoredHashSetOfPoints set : allPoints) {
       // then iterate through the points in each color
       for (Point point : set) {
         point.setScaledXPosition(MathUtils.map(point.getUnscaledXPosition(), unscaledMin_X, unscaledMax_X, 0,
@@ -89,8 +94,8 @@ public class ScaledScatterPlot {
     update();
   }
   
-  public Collection<ColoredHashSetOfPoints> getSetsToDraw() {
-    return pointsToDraw;
+  public Collection<ColoredHashSetOfPoints> getAllPoints() {
+    return allPoints;
   }
   
   public double getXAxisUnscaledMin() {
@@ -137,7 +142,7 @@ public class ScaledScatterPlot {
     }
     Collection<Point> pointsThatFallInRegion = new ArrayList<Point>(); // what data type should this be...
     if (type == Type.SCALED) {
-      for (ColoredHashSetOfPoints set : pointsToDraw) {
+      for (ColoredHashSetOfPoints set : allPoints) {
         for (Point point : set) {
           int scaledX = point.getScaledXPosition();
           int scaledY = point.getScaledYPosition();
@@ -147,7 +152,7 @@ public class ScaledScatterPlot {
         }
       }
     } else {
-      for (ColoredHashSetOfPoints set : pointsToDraw) {
+      for (ColoredHashSetOfPoints set : allPoints) {
         for (Point point : set) {
           double unscaledX = point.getUnscaledXPosition();
           double unscaledY = point.getUnscaledYPosition();
@@ -163,7 +168,7 @@ public class ScaledScatterPlot {
   }
   
   public void clearAllPoints() {
-    this.pointsToDraw.clear();
+    this.allPoints.clear();
   }
   
   public void setColoredPoints(Collection<Point> annotatedPoints, Map<String,Color> termToColor) {
@@ -175,13 +180,13 @@ public class ScaledScatterPlot {
     for (String term : termToColor.keySet()) {
       termToSet.put(term, new ColoredHashSetOfPoints(termToColor.get(term)));
     }
-    termToSet.put("other", new ColoredHashSetOfPoints(new Color(155, 155, 155)));
+    termToSet.put(OTHER, new ColoredHashSetOfPoints(new Color(155, 155, 155)));
     
     // Iterate through all of the points
     for (Point point : annotatedPoints) {
       termToSet.get(getGroup(point.getAnnotations(), termToColor)).add(point);
     }
-    pointsToDraw = termToSet.values();
+    allPoints = termToSet.values();
     update();
     System.out.println("Coloring takes " + (System.currentTimeMillis() - time));
     
@@ -189,31 +194,38 @@ public class ScaledScatterPlot {
   
   public void recolor(Map<String,Color> termToColor) {
     long time = System.currentTimeMillis();
-    HashMap<String,ColoredHashSetOfPoints> termToSet = new HashMap<String,ColoredHashSetOfPoints>();
+    annotationToSetOfPoints = new HashMap<String,ColoredHashSetOfPoints>();
+    // For some odd reason, in GWT,
+    // .clear deletes the points
+    
     for (String term : termToColor.keySet()) {
-      termToSet.put(term, new ColoredHashSetOfPoints(termToColor.get(term)));
+      annotationToSetOfPoints.put(term, new ColoredHashSetOfPoints(termToColor.get(term)));
     }
-    termToSet.put("other", new ColoredHashSetOfPoints(new Color(155, 155, 155)));
+    annotationToSetOfPoints.put(OTHER, new ColoredHashSetOfPoints(new Color(155, 155, 155)));
     
     // Iterate through all of the points
-    for (ColoredHashSetOfPoints set : pointsToDraw) {
+    for (ColoredHashSetOfPoints set : allPoints) {
       for (Point point : set) {
-        termToSet.get(getGroup(point.getAnnotations(), termToColor)).add(point);
+        annotationToSetOfPoints.get(getGroup(point.getAnnotations(), termToColor)).add(point);
       }
     }
-    pointsToDraw = termToSet.values();
+    allPoints = annotationToSetOfPoints.values();
     System.out.println("Recoloring takes " + (System.currentTimeMillis() - time));
   }
   
+  public Collection<Point> getPointsByAnnotation(String annotation) {
+    return annotationToSetOfPoints.get(annotation);
+  }
+  
   private String getGroup(Collection<String> annotations, Map<String,Color> termToColor) {
-    String termGroup = "other";
+    String termGroup = OTHER;
     boolean foundOnce = false;
     for (String term : termToColor.keySet()) {
       if (annotations.contains(term) && foundOnce == false) {
         termGroup = term;
         foundOnce = true;
       } else if (annotations.contains(term) && foundOnce == true) {
-        termGroup = "other";
+        termGroup = OTHER;
         foundOnce = false;
         break;
       } else {}

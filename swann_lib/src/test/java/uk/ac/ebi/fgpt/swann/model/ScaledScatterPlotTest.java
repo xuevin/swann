@@ -29,7 +29,7 @@ public class ScaledScatterPlotTest {
   
   @Test
   public void showThatAllValuesAreFetchableWithNoPoints() {
-    assertEquals(0, newScatterPlot.getSetsToDraw().size());
+    assertEquals(0, newScatterPlot.getAllPoints().size());
   }
   
   @Test

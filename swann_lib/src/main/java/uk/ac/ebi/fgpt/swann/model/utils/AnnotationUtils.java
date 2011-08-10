@@ -44,7 +44,7 @@ public class AnnotationUtils {
       }
     }
     
-    // STEP 1 REMOBE BAD TERMS
+    // STEP 1 REMOVE BAD TERMS
     removeBadTerms(sumCounts);
     
     // STEP 2 SORT FROM GREATEST TO LEAST
