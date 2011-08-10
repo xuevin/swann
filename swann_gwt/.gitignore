@@ -1,0 +1,6 @@
+SwannTest-prod.launch
+SwannTest-dev.launch
+.classpath
+.project
+.settings/
+target/

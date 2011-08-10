@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+  <!-- Inherit our applications main module.                      -->
+  <inherits name='uk.ac.ebi.fgpt.swann.Swann'/>
+
+  <!-- Specify the path to any remote services.                   -->
+  <servlet path="/Swann/dataService" class="uk.ac.ebi.fgpt.swann.server.DataServiceImpl" />
+
+</module>
